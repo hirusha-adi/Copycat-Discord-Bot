@@ -56,21 +56,40 @@ async def help(ctx):
                     value="Start repeating a user", inline=False)
     embed.add_field(name=f"{data['prefix']}stop [@user]",
                     value="Stop repeating a user", inline=False)
+    embed.add_field(name=f"{data['prefix']}status",
+                    value="Current repeating status", inline=False)
+    embed.add_field(name=f"Current Status",
+                    value=f"{_check_on_off()}", inline=False)
     embed.add_field(name=f"About This Project",
                     value="Made by Github user **@hirusha-adi**. This project is completely free and open source and under the MIT License", inline=False)
     embed.set_footer(text=f'Requested by {ctx.author.name}')
     await ctx.send(embed=embed)
-    await ctx.send()
+    return
 
 
 @client.command()
 async def start(ctx, user: discord.Member):
-    pass
+    embed = discord.Embed(title=data['title'], url=data['repo'],
+                          description=f"Status: **{_check_on_off()}**",
+                          timestamp=datetime.utcnow(),
+                          color=0x00FFFF)
+    embed.set_footer(text=f'Requested by {ctx.author.name}')
+    await ctx.send(embed=embed)
 
 
 @client.command()
 async def stop(ctx, user: discord.Member):
-    pass
+    return
+
+
+@client.command()
+async def status(ctx):
+    embed = discord.Embed(title=data['title'], url=data['repo'],
+                          description=f"Status: **{_check_on_off()}**",
+                          timestamp=datetime.utcnow(),
+                          color=0x00FFFF)
+    embed.set_footer(text=f'Requested by {ctx.author.name}')
+    await ctx.send(embed=embed)
 
 
 @client.event
@@ -94,16 +113,6 @@ async def on_message(message):
             await message.channel.send("Stopped")
         except Exception as e:
             await message.channel.send(f"An error has occured while changing status to 'on': {e}")
-
-    if msg.startswith('(info'):
-        await message.channel.send(f'This bot is made by ZeaCeR#5641 - Using this bot for illegal activites / cyber bullying is prohibited!')
-        await message.channel.send(f'Current Status: {_check_on_off()}')
-
-    if msg.startswith('(status'):
-        await message.channel.send(_check_on_off())
-
-    if msg.startswith('(inv'):
-        await message.channel.send("https://discord.com/api/oauth2/authorize?client_id=865913735427653632&permissions=8&scope=bot")
 
     else:
         try:
