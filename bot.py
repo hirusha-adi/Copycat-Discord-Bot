@@ -10,6 +10,7 @@ data = {
 }
 
 client = commands.Bot(command_prefix=data['prefix'])
+client.remove_command('help')
 
 
 def _make_on():
@@ -47,30 +48,31 @@ async def help(ctx):
                           timestamp=datetime.utcnow(),
                           color=0x00FFFF)
     embed.set_author(name=client.user.name,
-                     url=data['title'], icon_url=client.user.avatar_url)
+                     url=data['repo'], icon_url=client.user.avatar_url)
     embed.set_thumbnail(
         url="https://cdn.discordapp.com/attachments/877796755234783273/997036774037655602/unknown.png")
-    embed.add_field(name=f"{data['prefix']}help",
+    embed.add_field(name=f"`{data['prefix']}help`",
                     value="Display help", inline=False)
-    embed.add_field(name=f"{data['prefix']}start [@user]",
+    embed.add_field(name=f"`{data['prefix']}start [@user]`",
                     value="Start repeating a user", inline=False)
-    embed.add_field(name=f"{data['prefix']}stop [@user]",
+    embed.add_field(name=f"`{data['prefix']}stop [@user]`",
                     value="Stop repeating a user", inline=False)
-    embed.add_field(name=f"{data['prefix']}status",
+    embed.add_field(name=f"`{data['prefix']}status`",
                     value="Current repeating status", inline=False)
     embed.add_field(name=f"Current Status",
-                    value=f"{_check_on_off()}", inline=False)
-    embed.add_field(name=f"About This Project",
-                    value="Made by Github user **@hirusha-adi**. This project is completely free and open source and under the MIT License", inline=False)
+                    value=f"*{_check_on_off()}*", inline=False)
+    embed.add_field(name=f"Source Code",
+                    value="[Click Here](https://github.com/hirusha-adi/Copycat-Discord-Bot)", inline=False)
     embed.set_footer(text=f'Requested by {ctx.author.name}')
     await ctx.send(embed=embed)
     return
 
 
 @client.command()
-async def start(ctx, user: discord.Member):
+async def start(ctx):
+    _make_on()
     embed = discord.Embed(title=data['title'], url=data['repo'],
-                          description=f"Status: **{_check_on_off()}**",
+                          description=f"**New Status**: *{_check_on_off()}*",
                           timestamp=datetime.utcnow(),
                           color=0x00FFFF)
     embed.set_footer(text=f'Requested by {ctx.author.name}')
@@ -78,14 +80,14 @@ async def start(ctx, user: discord.Member):
 
 
 @client.command()
-async def stop(ctx, user: discord.Member):
+async def stop(ctx):
     return
 
 
 @client.command()
 async def status(ctx):
     embed = discord.Embed(title=data['title'], url=data['repo'],
-                          description=f"Status: **{_check_on_off()}**",
+                          description=f"**Status**: *{_check_on_off()}*",
                           timestamp=datetime.utcnow(),
                           color=0x00FFFF)
     embed.set_footer(text=f'Requested by {ctx.author.name}')
@@ -125,7 +127,9 @@ async def on_message(message):
         except Exception as e:
             await message.channel.send(f'An error has occured: {e}')
 
-if __name__ == "__name__":
-    with open("token.key", "r", encoding='utf-8') as _token_file:
-        TOKEN = _token_file.read()
-    client.run(TOKEN)
+    await client.process_commands(message)
+
+with open("token.key", "r", encoding='utf-8') as _token_file:
+    TOKEN = _token_file.read()
+
+client.run(TOKEN)
