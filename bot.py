@@ -12,26 +12,26 @@ data = {
 client = commands.Bot(command_prefix=data['prefix'])
 
 
-def make_on():
+def _make_on():
     file = open("status.txt", "w")
     file.write("on")
     file.close()
 
 
-def make_off():
+def _make_off():
     file = open("status.txt", "w")
     file.write("off")
     file.close()
 
 
-def check_on_off():
+def _check_on_off():
     file = open("status.txt", "r")
     status = file.read()
     file.close()
     return status
 
 
-make_off()
+_make_off()
 
 
 @client.event
@@ -64,7 +64,12 @@ async def help(ctx):
 
 
 @client.command()
-async def start(ctx):
+async def start(ctx, user: discord.Member):
+    pass
+
+
+@client.command()
+async def stop(ctx, user: discord.Member):
     pass
 
 
@@ -78,33 +83,33 @@ async def on_message(message):
 
     if msg.startswith('(pleasestartrepeating'):
         try:
-            make_on()
+            _make_on()
             await message.channel.send("Started")
         except Exception as e:
             await message.channel.send(f"An error has occured while changing status to 'on': {e}")
 
     if msg.startswith('(pleasestoprepeating'):
         try:
-            make_off()
+            _make_off()
             await message.channel.send("Stopped")
         except Exception as e:
             await message.channel.send(f"An error has occured while changing status to 'on': {e}")
 
     if msg.startswith('(info'):
         await message.channel.send(f'This bot is made by ZeaCeR#5641 - Using this bot for illegal activites / cyber bullying is prohibited!')
-        await message.channel.send(f'Current Status: {check_on_off()}')
+        await message.channel.send(f'Current Status: {_check_on_off()}')
 
     if msg.startswith('(status'):
-        await message.channel.send(check_on_off())
+        await message.channel.send(_check_on_off())
 
     if msg.startswith('(inv'):
         await message.channel.send("https://discord.com/api/oauth2/authorize?client_id=865913735427653632&permissions=8&scope=bot")
 
     else:
         try:
-            if check_on_off() == "off":
+            if _check_on_off() == "off":
                 pass
-            elif check_on_off() == "on":
+            elif _check_on_off() == "on":
                 await message.channel.send(str(msg))
             else:
                 await message.channel.send("Something else is wrong - please ask ZeaCeR#5641 to check the code")
