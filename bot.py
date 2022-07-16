@@ -1,15 +1,16 @@
-import discord
-from datetime import datetime
-from discord.ext import commands
 import os
+import json
+from datetime import datetime
 
-data = {
-    "title": "CopyCat Bot",
-    "repo": "https://github.com/hirusha-adi/Copycat-Discord-Bot",
-    "prefix": "rb"
-}
+import discord
+from discord.ext import commands
 
-client = commands.Bot(command_prefix=data['prefix'])
+# load settings
+with open(os.path.join(os.getcwd(), 'settings.json'), 'r', encoding='utf-8') as _file:
+    settings = json.load(_file)
+
+# instantiate bot
+client = commands.Bot(command_prefix=settings['prefix'])
 client.remove_command('help')
 
 
@@ -32,6 +33,7 @@ def _check_on_off():
     return status
 
 
+# switch off on startup by default
 _make_off()
 
 
@@ -42,22 +44,22 @@ async def on_ready():
 
 @client.command()
 async def help(ctx):
-    embed = discord.Embed(title=data['title'], url=data['repo'],
+    embed = discord.Embed(title=settings['title'], url=settings['repo'],
                           description="Help for {title}".format(
-                              title=data['title']),
+                              title=settings['title']),
                           timestamp=datetime.utcnow(),
                           color=0x00FFFF)
     embed.set_author(name=client.user.name,
-                     url=data['repo'], icon_url=client.user.avatar_url)
+                     url=settings['repo'], icon_url=client.user.avatar_url)
     embed.set_thumbnail(
         url="https://cdn.discordapp.com/attachments/877796755234783273/997036774037655602/unknown.png")
-    embed.add_field(name=f"`{data['prefix']}help`",
+    embed.add_field(name=f"`{settings['prefix']}help`",
                     value="Display help", inline=False)
-    embed.add_field(name=f"`{data['prefix']}start [@user]`",
-                    value="Start repeating a user", inline=False)
-    embed.add_field(name=f"`{data['prefix']}stop [@user]`",
-                    value="Stop repeating a user", inline=False)
-    embed.add_field(name=f"`{data['prefix']}status`",
+    embed.add_field(name=f"`{settings['prefix']}start`",
+                    value="Start repeating", inline=False)
+    embed.add_field(name=f"`{settings['prefix']}stop`",
+                    value="Stop repeating", inline=False)
+    embed.add_field(name=f"`{settings['prefix']}status`",
                     value="Current repeating status", inline=False)
     embed.add_field(name=f"Current Status",
                     value=f"*{_check_on_off()}*", inline=False)
@@ -71,7 +73,7 @@ async def help(ctx):
 @client.command()
 async def start(ctx):
     _make_on()
-    embed = discord.Embed(title=data['title'], url=data['repo'],
+    embed = discord.Embed(title=settings['title'], url=settings['repo'],
                           description=f"**New Status**: *{_check_on_off()}*",
                           timestamp=datetime.utcnow(),
                           color=0x00FFFF)
@@ -81,12 +83,18 @@ async def start(ctx):
 
 @client.command()
 async def stop(ctx):
-    return
+    _make_off()
+    embed = discord.Embed(title=settings['title'], url=settings['repo'],
+                          description=f"**New Status**: *{_check_on_off()}*",
+                          timestamp=datetime.utcnow(),
+                          color=0x00FFFF)
+    embed.set_footer(text=f'Requested by {ctx.author.name}')
+    await ctx.send(embed=embed)
 
 
 @client.command()
 async def status(ctx):
-    embed = discord.Embed(title=data['title'], url=data['repo'],
+    embed = discord.Embed(title=settings['title'], url=settings['repo'],
                           description=f"**Status**: *{_check_on_off()}*",
                           timestamp=datetime.utcnow(),
                           color=0x00FFFF)
@@ -102,33 +110,20 @@ async def on_message(message):
 
     msg = message.content
 
-    if msg.startswith('(pleasestartrepeating'):
-        try:
-            _make_on()
-            await message.channel.send("Started")
-        except Exception as e:
-            await message.channel.send(f"An error has occured while changing status to 'on': {e}")
-
-    if msg.startswith('(pleasestoprepeating'):
-        try:
-            _make_off()
-            await message.channel.send("Stopped")
-        except Exception as e:
-            await message.channel.send(f"An error has occured while changing status to 'on': {e}")
-
-    else:
-        try:
-            if _check_on_off() == "off":
-                pass
-            elif _check_on_off() == "on":
-                await message.channel.send(str(msg))
-            else:
-                await message.channel.send("Something else is wrong - please ask ZeaCeR#5641 to check the code")
-        except Exception as e:
-            await message.channel.send(f'An error has occured: {e}')
+    # repeat
+    try:
+        if _check_on_off() == "off":
+            pass
+        elif _check_on_off() == "on":
+            await message.channel.send(str(msg))
+        else:
+            await message.channel.send(f"Something else is wrong - please report at {settings['repo']}")
+    except Exception as e:
+        await message.channel.send(f'An error has occured: {e}')
 
     await client.process_commands(message)
 
+# load token
 with open("token.key", "r", encoding='utf-8') as _token_file:
     TOKEN = _token_file.read()
 
